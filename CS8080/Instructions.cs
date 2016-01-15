@@ -33,5 +33,12 @@ namespace CS8080
             state.memory.pc = address;
         }
 
+        public void lxi(State state)
+        {
+            state.cycleCount += 10;
+
+            ushort stackPointer = state.memory.readWord();
+            // TODO: Implement stack
+        }
     }
 }
