@@ -29,5 +29,17 @@ namespace CS8080
             pc += 2;
             return value;
         }
+
+        public ushort readWordAt(int position)
+        {
+            return BitConverter.ToUInt16(memory, position);
+        }
+
+        public void writeWord(int position, ushort word)
+        {
+            byte[] bytes = BitConverter.GetBytes(word);
+            memory[position] = bytes[0];
+            memory[position + 1] = bytes[1];
+        }
     }
 }
