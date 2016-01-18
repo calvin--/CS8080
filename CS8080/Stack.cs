@@ -14,13 +14,13 @@ namespace CS8080
         public void Push(ushort word)
         {
             stackPointer -= 2;
-            stack.writeWord(stackPointer, word);
+            stack.WriteWord(stackPointer, word);
         }
 
         public ushort Pop()
         {
             stackPointer += 2;
-            return stack.readWordAt(stackPointer - 2);
+            return stack.ReadWordAt(stackPointer - 2);
         }
 
         public void SetPosition(int position)

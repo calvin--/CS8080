@@ -7,6 +7,15 @@ using System.ComponentModel;
 /// </summary>
 namespace CS8080
 {
+    public enum Flag
+    {
+        SIGN = 1 << 7,
+        ZERO = 1 << 6,
+        ACARRY = 1 << 4,
+        PARITY = 1 << 2,
+        CARRY = 1 << 0
+    }
+
     [StructLayout(LayoutKind.Explicit)]
     public struct Registers
     {
@@ -46,6 +55,47 @@ namespace CS8080
         [FieldOffset(6)]
         public ushort AF;
 
+        [FieldOffset(8)]
+        public State state;
+
+        public Registers(State s) : this()
+        {
+            state = s;
+        }
+
+        public void SetFlags(byte mask)
+        {
+            if((mask & (byte) (Flag.ZERO)) != 0)
+            {
+                F |= (byte) Flag.ZERO;
+            }
+
+            if ((mask & (byte) (Flag.CARRY)) != 0)
+            {
+                F |= (byte) Flag.ZERO;
+            }
+
+            if ((mask & (byte) (Flag.ACARRY)) != 0)
+            {
+                F |= (byte) Flag.ZERO;
+            }
+
+            if ((mask & (byte) (Flag.PARITY)) != 0)
+            {
+                F |= (byte) Flag.ZERO;
+            }
+
+            if ((mask & (byte)(Flag.SIGN)) != 0)
+            {
+                F |= (byte) Flag.ZERO;
+            }
+        }
+
+        public void DumpFlags()
+        {
+            Console.WriteLine("ZERO: {0}", (F & (byte) Flag.ZERO) != 0);
+        }
+
         public void DumpRegisters()
         {
             Console.WriteLine("B: 0x{0:X}", B);
@@ -54,8 +104,8 @@ namespace CS8080
             Console.WriteLine("E: 0x{0:X}", E);
             Console.WriteLine("H: 0x{0:X}", H);
             Console.WriteLine("L: 0x{0:X}", L);
-            Console.WriteLine("F: 0x{0:X}", F);
             Console.WriteLine("A: 0x{0:X}", A);
+            Console.WriteLine("F: 0x{0:X}", F);
         }
 
         public void WriteByte(int index, byte value)
@@ -81,6 +131,7 @@ namespace CS8080
                     L = value;
                     break;
                 case 6:
+                    state.memory.WriteByte(HL, value);
                     break;
                 case 7:
                     A = value;
@@ -107,7 +158,7 @@ namespace CS8080
             }
         }
 
-        public byte ReadByte(int index, byte value)
+        public byte ReadByte(int index)
         {
             switch (index)
             {
@@ -124,7 +175,7 @@ namespace CS8080
                 case 5:
                     return L;
                 case 6:
-                    return 0;
+                    return state.memory.ReadByteAt(HL);
                 case 7:
                     return A;
                 default:
@@ -132,7 +183,7 @@ namespace CS8080
             }
         }
 
-        public ushort ReadWord(int index, ushort value)
+        public ushort ReadWord(int index)
         {
             switch (index)
             {

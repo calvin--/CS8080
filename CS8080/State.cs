@@ -10,7 +10,7 @@ namespace CS8080
     public class State
     {
         public Memory memory = new Memory(64 * 1000);
-        public Registers registers = new Registers();
+        public Registers registers;
         public Instructions instructions = new Instructions();
         public Stack stack = new Stack();
         public byte currentOpcode = 0;
@@ -26,7 +26,9 @@ namespace CS8080
             } catch(KeyNotFoundException)
             {
                 Console.WriteLine("Instruction not implemented: H: 0x{0:X}", instruction);
+                registers.SetFlags((byte) Flag.ZERO);
                 DumpState();
+
                 Console.ReadLine();
                 System.Environment.Exit(1);
             }
@@ -39,6 +41,7 @@ namespace CS8080
 
         public void Run()
         {
+            registers = new Registers(this);
             while (true)
             {
                 NextInstruction();
@@ -47,9 +50,9 @@ namespace CS8080
 
         public void NextInstruction()
         {
-            byte opcode = memory.readByte();
+            byte opcode = memory.ReadByte();
             currentOpcode = opcode;
-            Console.WriteLine("0x{0:X}", opcode);
+            //Console.WriteLine("0x{0:X}", opcode);
             CallInstruction(opcode);
         }
 
@@ -57,6 +60,8 @@ namespace CS8080
         {
             registers.DumpRegisters();
             stack.DumpStackPointer();
+            registers.DumpFlags();
+            Console.WriteLine("PC: 0x{0:X}", memory.pc);
         }
     }
 }

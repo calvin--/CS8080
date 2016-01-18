@@ -9,37 +9,48 @@ namespace CS8080
     public class Memory
     {
         public byte[] memory;
-        public int pc = 0;
+        public ushort pc = 0;
 
         public Memory(int size)
         {
             this.memory = new byte[size];
         }
 
-        public byte readByte()
+        public byte ReadByte()
         {
             byte value = memory[pc];
             pc++;
             return value;
         }
 
-        public ushort readWord()
+        public byte ReadByteAt(int position)
+        {
+            return memory[position];
+        }
+
+        public ushort ReadWord()
         {
             ushort value = BitConverter.ToUInt16(memory, pc);
             pc += 2;
             return value;
         }
 
-        public ushort readWordAt(int position)
+        public ushort ReadWordAt(int position)
         {
             return BitConverter.ToUInt16(memory, position);
         }
 
-        public void writeWord(int position, ushort word)
+        public void WriteByte(int position, byte value)
         {
-            byte[] bytes = BitConverter.GetBytes(word);
+            memory[position] = value;
+        }
+
+        public void WriteWord(int position, ushort value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
             memory[position] = bytes[0];
             memory[position + 1] = bytes[1];
         }
+
     }
 }
