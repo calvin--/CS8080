@@ -72,22 +72,22 @@ namespace CS8080
 
             if ((mask & (byte) (Flag.CARRY)) != 0)
             {
-                F |= (byte) Flag.ZERO;
+                F |= (byte) Flag.CARRY;
             }
 
             if ((mask & (byte) (Flag.ACARRY)) != 0)
             {
-                F |= (byte) Flag.ZERO;
+                F |= (byte) Flag.ACARRY;
             }
 
             if ((mask & (byte) (Flag.PARITY)) != 0)
             {
-                F |= (byte) Flag.ZERO;
+                F |= (byte) Flag.PARITY;
             }
 
             if ((mask & (byte)(Flag.SIGN)) != 0)
             {
-                F |= (byte) Flag.ZERO;
+                F |= (byte) Flag.SIGN;
             }
         }
 
