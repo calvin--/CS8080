@@ -17,6 +17,8 @@ namespace CS8080
 
         public int sp = 0;
         public int cycleCount = 0;
+        public int opCount = 0;
+        public int[] parityTable;
 
         public void CallInstruction(byte instruction)
         {
@@ -25,8 +27,6 @@ namespace CS8080
                 instructions.instructions[instruction](this);
             } catch(KeyNotFoundException)
             {
-                Console.WriteLine("Instruction not implemented: H: 0x{0:X}", instruction);
-                registers.SetFlags((byte) Flag.ZERO);
                 DumpState();
 
                 Console.ReadLine();
@@ -44,6 +44,7 @@ namespace CS8080
             registers = new Registers(this);
             while (true)
             {
+                opCount += 1;
                 NextInstruction();
             }
         }
@@ -52,16 +53,20 @@ namespace CS8080
         {
             byte opcode = memory.ReadByte();
             currentOpcode = opcode;
-            //Console.WriteLine("0x{0:X}", opcode);
             CallInstruction(opcode);
         }
 
         public void DumpState()
         {
+            Console.Write("Opcount:".PadRight(15));
+            Console.WriteLine("{0}", opCount);
+            Console.Write("Cyclecount:".PadRight(15));
+            Console.WriteLine("{0}", cycleCount);
             registers.DumpRegisters();
             stack.DumpStackPointer();
             registers.DumpFlags();
-            Console.WriteLine("PC: 0x{0:X}", memory.pc);
+            Console.Write("PC:".PadRight(15));
+            Console.WriteLine("0x{0:X}", memory.pc);
         }
     }
 }

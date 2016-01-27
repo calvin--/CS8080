@@ -8,29 +8,30 @@ namespace CS8080
 {
     public class Stack
     {
-        public int stackPointer = 0;
-        public Memory stack = new Memory(64 * 1000);
+        public int sp = 0;
+        public Memory stack = new Memory(0x2400);
 
         public void Push(ushort word)
         {
-            stackPointer -= 2;
-            stack.WriteWord(stackPointer, word);
+            sp -= 2;
+            stack.WriteWord(sp, word);
         }
 
         public ushort Pop()
         {
-            stackPointer += 2;
-            return stack.ReadWordAt(stackPointer - 2);
+            sp += 2;
+            return stack.ReadWordAt(sp - 2);
         }
 
         public void SetPosition(int position)
         {
-            stackPointer = position;
+            sp = position;
         }
 
         public void DumpStackPointer()
         {
-            Console.WriteLine("SP: 0x{0:X}", stackPointer);
+            Console.Write("SP:".PadRight(15));
+            Console.WriteLine("0x{0:X}", sp);
         }
     }
 }

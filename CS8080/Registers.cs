@@ -7,13 +7,13 @@ using System.ComponentModel;
 /// </summary>
 namespace CS8080
 {
-    public enum Flag
+    public static class Flag
     {
-        SIGN = 1 << 7,
-        ZERO = 1 << 6,
-        ACARRY = 1 << 4,
-        PARITY = 1 << 2,
-        CARRY = 1 << 0
+        public const byte SIGN = 1 << 7;
+        public const byte ZERO = 1 << 6;
+        public const byte ACARRY = 1 << 4;
+        public const byte PARITY = 1 << 2;
+        public const byte CARRY = 1 << 0;
     }
 
     [StructLayout(LayoutKind.Explicit)]
@@ -61,51 +61,148 @@ namespace CS8080
         public Registers(State s) : this()
         {
             state = s;
+            state.parityTable = new int[] {
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0,
+                1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1
+            };
         }
 
-        public void SetFlags(byte mask)
+        //This is all hacky due to C# being absolutely insane and converting byte (unsigned) to int (signed) whenever you do binary or arithmetic operations.
+        public void SetFlags(byte mask, byte value, int result)
         {
-            if((mask & (byte) (Flag.ZERO)) != 0)
+            if((mask & Flag.ZERO) != 0)
             {
-                F |= (byte) Flag.ZERO;
+                if (result == 0)
+                    F |= Flag.ZERO;
+                else
+                    F &= unchecked((byte) ~Flag.ZERO);
             }
 
-            if ((mask & (byte) (Flag.CARRY)) != 0)
+            if ((mask & Flag.CARRY) != 0)
             {
-                F |= (byte) Flag.CARRY;
+                if (result < 0 || result > 255)
+                    F |= Flag.CARRY;
+                else
+                    F &= unchecked((byte)~Flag.CARRY);
             }
 
-            if ((mask & (byte) (Flag.ACARRY)) != 0)
+            if ((mask & Flag.ACARRY) != 0)
             {
-                F |= (byte) Flag.ACARRY;
+                if(false)
+                {
+                    F |= Flag.ACARRY;
+                }
+                else
+                {
+                    F &= unchecked((byte)~Flag.ACARRY);
+                }
             }
 
-            if ((mask & (byte) (Flag.PARITY)) != 0)
+            if ((mask & Flag.PARITY) != 0)
             {
-                F |= (byte) Flag.PARITY;
+                if (state.parityTable[(byte) result] == 1)
+                    F |= Flag.PARITY;
+                else
+                    F &= unchecked((byte)~Flag.PARITY);
             }
 
-            if ((mask & (byte)(Flag.SIGN)) != 0)
+            if ((mask & Flag.SIGN) != 0)
             {
-                F |= (byte) Flag.SIGN;
+                if ((result & 0x80) != 0)
+                    F |= Flag.SIGN;
+                else
+                    F &= unchecked((byte)~Flag.SIGN);
             }
         }
+
+        public bool GetFlag(Byte flag)
+        {
+            if(flag == Flag.ACARRY)
+            {
+                return (F & Flag.ACARRY) != 0;
+            }
+
+            if (flag == Flag.CARRY)
+            {
+                return (F & Flag.CARRY) != 0;
+            }
+
+            if (flag == Flag.SIGN)
+            {
+                return (F & Flag.SIGN) != 0;
+            }
+
+            if (flag == Flag.ZERO)
+            {
+                return (F & Flag.ZERO) != 0;
+            }
+
+            if (flag == Flag.PARITY)
+            {
+                return (F & Flag.PARITY) != 0;
+            }
+
+            return false;
+        }
+
 
         public void DumpFlags()
         {
-            Console.WriteLine("ZERO: {0}", (F & (byte) Flag.ZERO) != 0);
+            Console.Write("ZERO:".PadRight(15));
+            Console.WriteLine((F & (byte)Flag.ZERO) != 0);
+
+            Console.Write("SIGN:".PadRight(15));
+            Console.WriteLine((F & (byte)Flag.SIGN) != 0);
+
+            Console.Write("PARITY:".PadRight(15));
+            Console.WriteLine((F & (byte)Flag.PARITY) != 0);
+
+            Console.Write("CARRY:".PadRight(15));
+            Console.WriteLine((F & (byte)Flag.CARRY) != 0);
+
+            Console.Write("ACARRY:".PadRight(15));
+            Console.WriteLine((F & (byte)Flag.ACARRY) != 0);
         }
 
         public void DumpRegisters()
         {
-            Console.WriteLine("B: 0x{0:X}", B);
-            Console.WriteLine("C: 0x{0:X}", C);
-            Console.WriteLine("D: 0x{0:X}", D);
-            Console.WriteLine("E: 0x{0:X}", E);
-            Console.WriteLine("H: 0x{0:X}", H);
-            Console.WriteLine("L: 0x{0:X}", L);
-            Console.WriteLine("A: 0x{0:X}", A);
-            Console.WriteLine("F: 0x{0:X}", F);
+            Console.Write("B:".PadRight(15));
+            Console.WriteLine( "0x{0:X2}", B);
+
+            Console.Write("C:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", C);
+
+            Console.Write("D:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", D);
+
+            Console.Write("E:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", E);
+
+            Console.Write("H:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", H);
+
+            Console.Write("L:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", L);
+
+            Console.Write("A:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", A);
+
+            Console.Write("F:".PadRight(15));
+            Console.WriteLine("0x{0:X2}", F);
         }
 
         public void WriteByte(int index, byte value)

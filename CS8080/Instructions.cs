@@ -47,6 +47,11 @@ namespace CS8080
                 { 0x13, inx_w },
                 { 0x23, inx_w },
 
+                { 0x05, dcr },
+
+                { 0xc2, jnz }
+
+
             };
         }
         
@@ -133,6 +138,29 @@ namespace CS8080
             value++;
 
             state.registers.WriteWord(dst, value);
+        }
+
+        public void dcr(State state)
+        {
+            state.cycleCount += 5;
+
+            int dst = (state.currentOpcode >> 3) & 0x07;
+            byte value = state.registers.ReadByte(dst);
+            int result = value - 1;
+
+
+            state.registers.SetFlags((byte) Flag.SIGN | (byte) Flag.ZERO | (byte) Flag.PARITY | (byte) Flag.ACARRY, value, result);
+            state.registers.WriteByte(dst, (byte) result);
+        }
+
+        public void jnz(State state)
+        {
+            state.cycleCount += 10;
+            ushort address = state.memory.ReadWord();
+
+            if (!state.registers.GetFlag(Flag.ZERO)) {
+                state.memory.pc = address;
+            };   
         }
     }
 }
