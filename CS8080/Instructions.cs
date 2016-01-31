@@ -25,6 +25,8 @@ namespace CS8080
                 { 0x1e, mvi },
                 { 0x26, mvi },
                 { 0x2e, mvi },
+                { 0x36, mvi },
+
 
                 { 0xcd, call },
 
@@ -35,13 +37,23 @@ namespace CS8080
                 { 0x0a, ldax },
                 { 0x1a, ldax },
 
-                { 0x70, mov_to_mem},
-                { 0x71, mov_to_mem},
-                { 0x72, mov_to_mem},
-                { 0x73, mov_to_mem},
-                { 0x74, mov_to_mem},
-                { 0x75, mov_to_mem},
-                { 0x77, mov_to_mem},
+                { 0x70, mov },
+                { 0x71, mov },
+                { 0x72, mov },
+                { 0x73, mov },
+                { 0x74, mov },
+                { 0x75, mov },
+                { 0x77, mov },
+
+                { 0x78, mov },
+                { 0x79, mov },
+                { 0x7a, mov },
+                { 0x7b, mov },
+                { 0x7c, mov },
+                { 0x7d, mov },
+                { 0x7e, mov },
+                { 0x7f, mov },
+
 
                 { 0x03, inx_w },
                 { 0x13, inx_w },
@@ -49,7 +61,11 @@ namespace CS8080
 
                 { 0x05, dcr },
 
-                { 0xc2, jnz }
+                { 0xc2, jnz },
+
+                { 0xc9, ret },
+
+                { 0xfe, cpi }
 
 
             };
@@ -117,15 +133,16 @@ namespace CS8080
             state.registers.WriteByte(dst, value);
         }
 
-        public void mov_to_mem(State state)
+        public void mov(State state)
         {
             state.cycleCount += 7;
 
             int src = (state.currentOpcode & 0x7);
-            ushort address = state.registers.ReadWord(2); // (HL)
+            int dst = (state.currentOpcode >> 3) & 0x07;
+
             byte value = state.registers.ReadByte(src);
 
-            state.memory.WriteByte(address, value);
+            state.registers.WriteByte(dst, value);            
         }
 
         public void inx_w(State state)
@@ -161,6 +178,27 @@ namespace CS8080
             if (!state.registers.GetFlag(Flag.ZERO)) {
                 state.memory.pc = address;
             };   
+        }
+
+        public void ret(State state)
+        {
+            state.cycleCount += 10;
+            ushort address = state.stack.Pop();
+
+            state.memory.pc = address;
+        }
+
+        public void cpi(State state)
+        {
+            state.cycleCount += 7;
+            byte value = state.memory.ReadByte();
+            byte dst = state.registers.ReadByte(7); // A
+
+            Console.WriteLine(dst);
+
+            int result = dst - value;
+
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY, value, result);
         }
     }
 }

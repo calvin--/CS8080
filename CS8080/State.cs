@@ -24,9 +24,18 @@ namespace CS8080
         {
             try
             {
+                //Console.WriteLine("{0}: 0x{1:X}", opCount, instruction);
+
+                if(false && opCount > 1552)
+                {
+                    Console.ReadLine();
+                    DumpState();
+                }
+
                 instructions.instructions[instruction](this);
             } catch(KeyNotFoundException)
             {
+                Console.WriteLine("Instruction not implemented: 0x{0:X}", instruction);
                 DumpState();
 
                 Console.ReadLine();
