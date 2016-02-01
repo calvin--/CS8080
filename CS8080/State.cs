@@ -20,6 +20,11 @@ namespace CS8080
         public int opCount = 0;
         public int[] parityTable;
 
+        public ushort shiftRegister = 0x0000;
+        public ushort shifOffset = 0x0000;
+
+        public int lastInterrupt = 0x10;
+
         public void CallInstruction(byte instruction)
         {
             try
@@ -53,6 +58,7 @@ namespace CS8080
             registers = new Registers(this);
             while (true)
             {
+                processInterrupt();
                 opCount += 1;
                 NextInstruction();
             }
@@ -63,6 +69,35 @@ namespace CS8080
             byte opcode = memory.ReadByte();
             currentOpcode = opcode;
             CallInstruction(opcode);
+        }
+
+        public void processInterrupt()
+        {
+            if(cycleCount > 16667)
+            {
+                cycleCount -= 16667;
+
+                if((registers.F & Flag.INTERRUPT) != 0)
+                {
+                    causeInterrupt();
+                }
+            }
+        }
+
+        public void causeInterrupt()
+        {
+            ushort address;
+
+            if(lastInterrupt == 0x10)
+            {
+                address = 0x08;
+            } else
+            {
+                address = 0x10;
+            }
+
+            stack.Push(memory.pc);
+            memory.pc = address;
         }
 
         public void DumpState()

@@ -111,6 +111,7 @@ namespace CS8080
                 { 0xc5, push },
                 { 0xd5, push },
                 { 0xe5, push },
+                { 0xf5, push },
 
                 { 0x09, dad },
                 { 0x19, dad },
@@ -121,11 +122,39 @@ namespace CS8080
                 { 0xc1, pop },
                 { 0xd1, pop },
                 { 0xe1, pop },
+                { 0xf1, pop },
 
-                { 0xd3, output }
+                { 0xd3, output },
+                { 0xfb, ei },
+                { 0xdb, input },
 
+                { 0x0f, rrc },
 
+                { 0xe6, ani },
 
+                { 0xc6, adi },
+
+                { 0x3a, lda },
+
+                { 0x32, sta },
+
+                { 0xa8, xra},
+                { 0xa9, xra},
+                { 0xaa, xra},
+                { 0xab, xra},
+                { 0xac, xra},
+                { 0xad, xra},
+                { 0xae, xra},
+                { 0xaf, xra},
+
+                { 0xa0, ana},
+                { 0xa1, ana},
+                { 0xa2, ana},
+                { 0xa3, ana},
+                { 0xa4, ana},
+                { 0xa5, ana},
+                { 0xa6, ana},
+                { 0xa7, ana},
             };
         }
 
@@ -261,8 +290,9 @@ namespace CS8080
         {
             state.cycleCount += 11;
 
-            int dst = (state.currentOpcode >> 4) & 0x3;
-            ushort value = state.registers.ReadWord(dst);
+            int src = (state.currentOpcode >> 4) & 0x3;
+            ushort value = state.registers.ReadWord(src);
+
             state.stack.Push(value);
         }
 
@@ -317,15 +347,124 @@ namespace CS8080
 
             switch (port)
             {
+                case 3:
+                    //SOUND
+                    break;
+                case 5:
+                    //SOUND
+                    break;
                 case 6:
                     //Watchdog?!?
                     break;
                 default:
+                    state.DumpState();
                     Console.WriteLine("Unhandled OUT {0}", port);
                     Console.ReadLine();
                     break;
 
             }
         }
+
+        public void rrc(State state)
+        {
+            state.cycleCount += 4;
+
+            if(((int) state.registers.A & 1) != 0)
+            {
+                state.registers.F |= Flag.CARRY;
+            } else
+            {
+                state.registers.F &= unchecked((byte)~Flag.CARRY);
+            }
+
+            int result = (state.registers.A >> 1) | ((state.registers.F & Flag.CARRY) << 7 );
+
+            state.registers.A = (byte)result;
+        }
+
+        public void ani(State state)
+        {
+            state.cycleCount += 7;
+            byte value = state.memory.ReadByte();
+
+            int result = state.registers.A & value;
+
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, value, result);
+
+            state.registers.A = (byte)result;
+        }
+
+        public void adi(State state)
+        {
+            state.cycleCount += 7;
+            byte value = state.memory.ReadByte();
+
+            int result = state.registers.A + value;
+
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, value, result);
+
+            state.registers.A = (byte)result;
+        }
+
+        public void lda(State state)
+        {
+            state.cycleCount += 13;
+            ushort address = state.memory.ReadWord();
+            byte value = state.memory.ReadByteAt(address);
+
+            state.registers.A = value;
+        }
+
+        public void sta(State state)
+        {
+            state.cycleCount += 13;
+            ushort address = state.memory.ReadWord();
+
+            state.memory.WriteByte(address, state.registers.A);
+        }
+
+        public void xra(State state)
+        {
+            state.cycleCount += 4;
+
+            int src = (state.currentOpcode & 0x7);
+
+            byte value = state.registers.ReadByte(src);
+            int result = state.registers.A ^ value;
+
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, result);
+
+            state.registers.A = (byte)result;
+        }
+
+        public void ana(State state)
+        {
+            state.cycleCount += 4;
+
+            int src = (state.currentOpcode & 0x7);
+
+            byte value = state.registers.ReadByte(src);
+            int result = state.registers.A & value;
+
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, result);
+
+            state.registers.A = (byte)result;
+        }
+
+        public void input(State state)
+        {
+            state.cycleCount += 10;
+
+            //TODO: INPUT
+        }
+
+        public void ei(State state)
+        {
+            state.cycleCount += 4;
+            state.registers.F |= Flag.INTERRUPT;
+
+            //TODO: INPUT
+        }
+
     }
 }

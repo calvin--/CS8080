@@ -11,6 +11,7 @@ namespace CS8080
     {
         public const byte SIGN = 1 << 7;
         public const byte ZERO = 1 << 6;
+        public const byte INTERRUPT = 1 << 5;
         public const byte ACARRY = 1 << 4;
         public const byte PARITY = 1 << 2;
         public const byte CARRY = 1 << 0;
