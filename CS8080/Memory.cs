@@ -52,5 +52,10 @@ namespace CS8080
             memory[position + 1] = bytes[1];
         }
 
+        public byte[] getVRAM()
+        {
+            return memory.Skip<byte>(0x2400).Take<byte>(0x4000 - 0x2400).ToArray();
+        }
+
     }
 }
