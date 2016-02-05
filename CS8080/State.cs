@@ -4,6 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace CS8080
 {
@@ -21,20 +26,32 @@ namespace CS8080
         public int[] parityTable;
 
         public ushort shiftRegister = 0x0000;
-        public ushort shifOffset = 0x0000;
+        public ushort shiftOffset = 0x0000;
 
         public int lastInterrupt = 0x10;
+        public Stopwatch timer = new Stopwatch();
+        public double lastInterruptTime = 0.0f;
+        public bool lol = false;
 
         public void CallInstruction(byte instruction)
         {
             try
             {
-                //Console.WriteLine("{0}: 0x{1:X}", opCount, instruction);
-
-                if(false && opCount > 1552)
+                if(false && memory.pc == 0x1457)
                 {
-                    Console.ReadLine();
+                    lol = true;
+                }
+
+                if(false && memory.pc > 5323-2 && memory.pc < 5323+2)
+                {
+                    Console.WriteLine("lol");
+                    lol = true;
+                }
+
+                if (lol)
+                {
                     DumpState();
+                    Console.ReadLine();
                 }
 
                 instructions.instructions[instruction](this);
@@ -42,6 +59,7 @@ namespace CS8080
             {
                 Console.WriteLine("Instruction not implemented: 0x{0:X}", instruction);
                 DumpState();
+
 
                 Console.ReadLine();
                 System.Environment.Exit(1);
@@ -55,7 +73,10 @@ namespace CS8080
 
         public void Run()
         {
+            Console.Read();
             registers = new Registers(this);
+            timer.Start();
+
             while (true)
             {
                 processInterrupt();
@@ -81,15 +102,28 @@ namespace CS8080
                 {
                     causeInterrupt();
                 }
+                
+                int sleepTime = (int) (timer.Elapsed.TotalMilliseconds - lastInterruptTime);
+
+                if (sleepTime < (1000/120))
+                {
+                    //System.Threading.Thread.Sleep((1000/120)-sleepTime);
+                }
+
+                lastInterruptTime = timer.Elapsed.TotalMilliseconds;
+                
             }
+
         }
 
         public void causeInterrupt()
         {
             ushort address;
 
-            if(lastInterrupt == 0x10)
+            if (lastInterrupt == 0x10)
             {
+                Vblank();
+
                 address = 0x08;
             } else
             {
@@ -98,6 +132,7 @@ namespace CS8080
 
             stack.Push(memory.pc);
             memory.pc = address;
+            lastInterrupt = address;
         }
 
         public void DumpState()
@@ -110,7 +145,29 @@ namespace CS8080
             stack.DumpStackPointer();
             registers.DumpFlags();
             Console.Write("PC:".PadRight(15));
-            Console.WriteLine("0x{0:X}", memory.pc);
+            Console.WriteLine("0x{0:X}", memory.pc-1);
+            Vblank();
+        }
+
+        public void Vblank()
+        {
+            var ram = memory.getVRAM();
+            Array.Reverse(ram);
+
+            GCHandle handle = GCHandle.Alloc(ram, GCHandleType.Pinned);
+            IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(ram, 0);
+
+            var bmap = new Bitmap(256, 224, 32, PixelFormat.Format1bppIndexed, ptr);
+            handle.Free();
+            bmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
+
+            try
+            {
+                Program.form1.pictureBox1.Image = bmap;
+            } catch
+            {
+
+            }
         }
     }
 }

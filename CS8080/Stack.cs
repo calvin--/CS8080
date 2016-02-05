@@ -8,7 +8,7 @@ namespace CS8080
 {
     public class Stack
     {
-        public int sp = 0;
+        public ushort sp = 0;
         public Memory stack = new Memory(0x2400);
 
         public void Push(ushort word)
@@ -23,7 +23,7 @@ namespace CS8080
             return stack.ReadWordAt(sp - 2);
         }
 
-        public void SetPosition(int position)
+        public void SetPosition(ushort position)
         {
             sp = position;
         }
