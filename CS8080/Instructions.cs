@@ -206,13 +206,48 @@ namespace CS8080
                 { 0xbe, cmp },
                 { 0xbf, cmp },
 
-                { 0xd4, cnc }
+                { 0xd4, cnc },
+
+                { 0x90, sub },
+                { 0x91, sub },
+                { 0x92, sub },
+                { 0x93, sub },
+                { 0x94, sub },
+                { 0x95, sub },
+                { 0x96, sub },
+                { 0x97, sub },
+
+                { 0x02, stax },
+                { 0x12, stax },
+                { 0x27, daa },
+                { 0x88, adc },
+                { 0x89, adc },
+                { 0x8a, adc },
+                { 0x8b, adc },
+                { 0x8c, adc },
+                { 0x8d, adc },
+                { 0x8e, adc },
+                { 0x8f, adc },
+
              };
         }
 
         public void nop(State state)
         {
             state.cycleCount += 4;
+        }
+
+        public void stax(State state)
+        {
+            state.cycleCount += 7;
+
+            int src = (state.currentOpcode >> 4) & 0x03;
+            int dst = 7; // A
+
+            ushort address = state.registers.ReadWord(src);
+            byte value = state.registers.ReadByte(dst);
+
+            state.memory.WriteByte(address, value);
         }
 
         public void jump(State state)
@@ -444,6 +479,18 @@ namespace CS8080
             state.registers.A = (byte)result;
         }
 
+        public void adc(State state)
+        {
+            state.cycleCount += 4;
+            int src = (state.currentOpcode & 0x7);
+            byte value = state.registers.ReadByte(src);
+
+            int result = state.registers.A + value + (state.registers.F & (byte)Flag.CARRY);
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, value, result);
+
+            state.registers.A = (byte)result;
+        }
+
         public void lda(State state)
         {
             state.cycleCount += 13;
@@ -503,6 +550,19 @@ namespace CS8080
             state.registers.A = (byte)result;
         }
 
+        public void sub(State state)
+        {
+            state.cycleCount += 4;
+
+            int src = (state.currentOpcode & 0x7);
+
+            byte value = state.registers.ReadByte(src);
+            int result = state.registers.A - value;
+
+            state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, result);
+
+            state.registers.A = (byte)result;
+        }
 
         public void ora(State state)
         {
@@ -526,8 +586,14 @@ namespace CS8080
 
             switch (port)
             {
+                case 1:
+                    state.registers.A = (byte)state.inp1;
+                    break;
+                case 2:
+                    state.registers.A = (byte)state.inp2;
+                    break;
                 case 3:
-                    state.registers.A = (byte)((state.shiftRegister << state.shiftOffset) >> 8);
+                    state.registers.A = (byte)((((state.port4HI << 8) | state.port4LO) << state.port2) >> 8);
                     break;
                 default:
                     break;
@@ -543,13 +609,14 @@ namespace CS8080
             switch (port)
             {
                 case 2:
-                    state.shiftOffset = state.registers.A;
+                    state.port2 = state.registers.A;
                     break;
                 case 3:
                     //SOUND
                     break;
                 case 4:
-                    state.shiftRegister = (ushort)((state.shiftRegister << 8) | state.registers.A);
+                    state.port4LO = state.port4HI;
+                    state.port4HI = state.registers.A;
                     break;
                 case 5:
                     //SOUND
@@ -619,6 +686,25 @@ namespace CS8080
             if (state.registers.GetFlag(Flag.CARRY))
             {
                 state.memory.pc = address;
+            }
+        }
+
+        public void daa(State state)
+        {
+            int top4 = (state.registers.A >> 4) & 0xf;
+            int bot4 = (state.registers.A & 0xf);
+
+            if ((bot4 > 9) || ((state.registers.F & (int)Flag.CARRY) > 0)) {
+                state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, state.registers.A + 6);
+                state.registers.A += 6;
+                top4 = (state.registers.A >> 4) & 0xF;
+                bot4 = (state.registers.A & 0xf);
+            }
+
+            if((top4 > 9) || ((state.registers.F & (int)Flag.CARRY) > 0))
+            {
+                top4 += 6;
+                state.registers.A = (byte)((top4 << 4) | bot4);
             }
         }
 
@@ -787,16 +873,36 @@ namespace CS8080
         {
             state.cycleCount += 4;
 
-            if((state.registers.A & 1) != 0)
+            /*
+            byte bit1 = (byte)(state.registers.A & 0x1);
+            state.registers.A = (byte)((state.registers.A >> 1) | ((state.registers.F & Flag.CARRY) << 7));
+
+            if (bit1 != 0)
+            {
+                state.registers.F |= Flag.CARRY;
+            }
+            else
+            {
+                state.registers.F &= unchecked((byte)~Flag.CARRY);
+            }*/
+
+            int temp = state.registers.A & 0xff;
+
+            state.registers.A >>= 1;
+
+            if((state.registers.F & Flag.CARRY) > 0)
+            {
+                state.registers.A |= 0x80;
+            }
+
+            if((temp & 1) > 0)
             {
                 state.registers.F |= Flag.CARRY;
             } else
             {
                 state.registers.F &= unchecked((byte)~Flag.CARRY);
             }
-
-            state.registers.A = (byte) ((state.registers.A >> 1) | ((state.registers.F & Flag.CARRY) << 7));
-        }
+        }   
 
         public void ori(State state)
         {

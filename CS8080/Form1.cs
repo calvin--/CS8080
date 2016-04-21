@@ -14,7 +14,8 @@ namespace CS8080
     {
         public Form1()
         {
-            
+
+            this.KeyPreview = true;
             InitializeComponent();
             /*
             State state = new State();
@@ -24,6 +25,19 @@ namespace CS8080
             Console.ReadLine();*/
         }
 
-       
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            Program.state.processInput(e.KeyCode);
+        }
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            Program.state.processInput(Keys.J);
+        }
     }
 }

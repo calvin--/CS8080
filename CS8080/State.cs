@@ -25,29 +25,25 @@ namespace CS8080
         public int opCount = 0;
         public int[] parityTable;
 
-        public ushort shiftRegister = 0x0000;
-        public ushort shiftOffset = 0x0000;
-
         public int lastInterrupt = 0x10;
         public Stopwatch timer = new Stopwatch();
         public double lastInterruptTime = 0.0f;
         public bool lol = false;
 
+        public int port4HI = 0;
+        public int port4LO = 0;
+        public int port2 = 0;
+
+        public int inp1 = 0x01;
+        public int inp2 = 0x00;
+
+        public Keys lastKey = 0;
+
+
         public void CallInstruction(byte instruction)
         {
             try
             {
-                if(false && memory.pc == 0x1457)
-                {
-                    lol = true;
-                }
-
-                if(false && memory.pc > 5323-2 && memory.pc < 5323+2)
-                {
-                    Console.WriteLine("lol");
-                    lol = true;
-                }
-
                 if (lol)
                 {
                     DumpState();
@@ -59,10 +55,7 @@ namespace CS8080
             {
                 Console.WriteLine("Instruction not implemented: 0x{0:X}", instruction);
                 DumpState();
-
-
                 Console.ReadLine();
-                System.Environment.Exit(1);
             }
         }
 
@@ -73,7 +66,6 @@ namespace CS8080
 
         public void Run()
         {
-            Console.Read();
             registers = new Registers(this);
             timer.Start();
 
@@ -92,6 +84,11 @@ namespace CS8080
             CallInstruction(opcode);
         }
 
+        public void processInput(Keys key)
+        {
+            lastKey = key;
+        }
+
         public void processInterrupt()
         {
             if(cycleCount > 16667)
@@ -107,7 +104,7 @@ namespace CS8080
 
                 if (sleepTime < (1000/120))
                 {
-                    //System.Threading.Thread.Sleep((1000/120)-sleepTime);
+                    System.Threading.Thread.Sleep((1000/120)-sleepTime);
                 }
 
                 lastInterruptTime = timer.Elapsed.TotalMilliseconds;
@@ -124,9 +121,35 @@ namespace CS8080
             {
                 Vblank();
 
+                switch (lastKey)
+                {
+                    case Keys.Left:
+                        inp1 |= (1 << 5);
+                        break;
+                    case Keys.Right:
+                        inp1 |= (1 << 6);
+                        break;
+                    case Keys.C:
+                        inp1 |= (1 >> 0);
+                        break;
+                    case Keys.X:
+                        inp1 |= (1 << 2);
+                        break;
+                    case Keys.Z:
+                        inp1 |= (1 << 4);
+                        break;
+                    case Keys.J:
+                        inp1 = 0x0;
+                        break;
+                    default:
+                        break;
+
+                }
+
                 address = 0x08;
             } else
             {
+
                 address = 0x10;
             }
 
