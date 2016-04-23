@@ -32,12 +32,12 @@ namespace CS8080
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            Program.state.processInput(e.KeyCode);
+            Program.state.ProcessInput(e.KeyCode);
         }
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
-            Program.state.processInput(Keys.J);
+            Program.state.ProcessInput(Keys.J);
         }
     }
 }

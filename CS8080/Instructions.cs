@@ -612,14 +612,19 @@ namespace CS8080
                     state.port2 = state.registers.A;
                     break;
                 case 3:
-                    //SOUND
+                    if (((state.registers.A & (1 << 3)) > 0) && ((state.port3o & (1 << 3)) == 0))
+                    {
+                        state.soundInvaderKilled.Play();
+                    }
+
+                    state.port3o = state.registers.A;
                     break;
                 case 4:
                     state.port4LO = state.port4HI;
                     state.port4HI = state.registers.A;
                     break;
                 case 5:
-                    //SOUND
+
                     break;
                 case 6:
                     //Watchdog?!?
@@ -689,6 +694,9 @@ namespace CS8080
             }
         }
 
+        /*
+        This BCD stuff is like black magic to me, implemented by looking at similar emulators.
+        */
         public void daa(State state)
         {
             int top4 = (state.registers.A >> 4) & 0xf;
@@ -796,7 +804,8 @@ namespace CS8080
         {
             state.cycleCount += 7;
 
-            int result = state.registers.A - 1;
+            byte value = state.memory.ReadByte();
+            int result = state.registers.A - value;
             state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, result);
 
             state.registers.A = (byte) result;

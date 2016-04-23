@@ -9,6 +9,8 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Media;
+using static System.Linq.Enumerable;
 
 namespace CS8080
 {
@@ -37,8 +39,14 @@ namespace CS8080
         public int inp1 = 0x01;
         public int inp2 = 0x00;
 
+        public int port3o = 0x0;
+        public int port5o = 0x0;
+        
+
         public Keys lastKey = 0;
 
+        public SoundPlayer soundInvaderKilled = new SoundPlayer(@"c:\invaderkilled.wav");
+        public Dictionary<int, int> count = new Dictionary<int, int>();
 
         public void CallInstruction(byte instruction)
         {
@@ -50,12 +58,26 @@ namespace CS8080
                     Console.ReadLine();
                 }
 
+                count[instruction]++;
+
                 instructions.instructions[instruction](this);
             } catch(KeyNotFoundException)
             {
                 Console.WriteLine("Instruction not implemented: 0x{0:X}", instruction);
                 DumpState();
                 Console.ReadLine();
+            }
+        }
+
+        public void PrintCount()
+        {
+            int kek = 0;
+
+            foreach (KeyValuePair<int, int> item in count)
+            {
+                Console.Write("{0:X}: ".PadRight(15), item.Key);
+                Console.WriteLine("{0}", item.Value);
+                kek++;
             }
         }
 
@@ -69,9 +91,14 @@ namespace CS8080
             registers = new Registers(this);
             timer.Start();
 
+            foreach (var index in Range(0, 255))
+            {
+                count[index] = 0;
+            }
+
             while (true)
             {
-                processInterrupt();
+                ProcessInterrupt();
                 opCount += 1;
                 NextInstruction();
             }
@@ -84,12 +111,12 @@ namespace CS8080
             CallInstruction(opcode);
         }
 
-        public void processInput(Keys key)
+        public void ProcessInput(Keys key)
         {
             lastKey = key;
         }
 
-        public void processInterrupt()
+        public void ProcessInterrupt()
         {
             if(cycleCount > 16667)
             {
@@ -97,7 +124,7 @@ namespace CS8080
 
                 if((registers.F & Flag.INTERRUPT) != 0)
                 {
-                    causeInterrupt();
+                    CauseInterrupt();
                 }
                 
                 int sleepTime = (int) (timer.Elapsed.TotalMilliseconds - lastInterruptTime);
@@ -113,7 +140,7 @@ namespace CS8080
 
         }
 
-        public void causeInterrupt()
+        public void CauseInterrupt()
         {
             ushort address;
 
@@ -140,6 +167,9 @@ namespace CS8080
                         break;
                     case Keys.J:
                         inp1 = 0x0;
+                        break;
+                    case Keys.P:
+                        PrintCount();
                         break;
                     default:
                         break;
