@@ -82,7 +82,6 @@ namespace CS8080
             };
         }
 
-        //This is all hacky due to C# being absolutely insane and converting byte (unsigned) to int (signed) whenever you do binary or arithmetic operations.
         public void SetFlags(byte mask, byte value, int result)
         {
             if((mask & Flag.ZERO) != 0)
@@ -103,7 +102,7 @@ namespace CS8080
 
             if ((mask & Flag.ACARRY) != 0)
             {
-                if(false)
+                if((value & 0xf) > (result & 0xf))
                 {
                     F |= Flag.ACARRY;
                 }

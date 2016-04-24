@@ -20,17 +20,16 @@ namespace CS8080
         public Registers registers;
         public Instructions instructions = new Instructions();
         public Stack stack = new Stack();
-        public byte currentOpcode = 0;
 
-        public int sp = 0;
+        public byte currentOpcode = 0;
         public int cycleCount = 0;
         public int opCount = 0;
+
         public int[] parityTable;
 
         public int lastInterrupt = 0x10;
         public Stopwatch timer = new Stopwatch();
         public double lastInterruptTime = 0.0f;
-        public bool lol = false;
 
         public int port4HI = 0;
         public int port4LO = 0;
@@ -42,24 +41,31 @@ namespace CS8080
         public int port3o = 0x0;
         public int port5o = 0x0;
         
-
         public Keys lastKey = 0;
 
         public SoundPlayer soundInvaderKilled = new SoundPlayer(@"c:\invaderkilled.wav");
-        public Dictionary<int, int> count = new Dictionary<int, int>();
+
+        public State()
+        {
+            registers = new Registers(this);
+        }
+
+        public void Run()
+        {
+            timer.Start();
+
+            while (true)
+            {
+                ProcessInterrupt();
+                opCount += 1;
+                NextInstruction();
+            }
+        }
 
         public void CallInstruction(byte instruction)
         {
             try
             {
-                if (lol)
-                {
-                    DumpState();
-                    Console.ReadLine();
-                }
-
-                count[instruction]++;
-
                 instructions.instructions[instruction](this);
             } catch(KeyNotFoundException)
             {
@@ -69,39 +75,9 @@ namespace CS8080
             }
         }
 
-        public void PrintCount()
-        {
-            int kek = 0;
-
-            foreach (KeyValuePair<int, int> item in count)
-            {
-                Console.Write("{0:X}: ".PadRight(15), item.Key);
-                Console.WriteLine("{0}", item.Value);
-                kek++;
-            }
-        }
-
         public void LoadRom(string path)
         {
             File.ReadAllBytes(path).CopyTo(memory.memory, 0);
-        }
-
-        public void Run()
-        {
-            registers = new Registers(this);
-            timer.Start();
-
-            foreach (var index in Range(0, 255))
-            {
-                count[index] = 0;
-            }
-
-            while (true)
-            {
-                ProcessInterrupt();
-                opCount += 1;
-                NextInstruction();
-            }
         }
 
         public void NextInstruction()
@@ -135,7 +111,6 @@ namespace CS8080
                 }
 
                 lastInterruptTime = timer.Elapsed.TotalMilliseconds;
-                
             }
 
         }
@@ -147,7 +122,6 @@ namespace CS8080
             if (lastInterrupt == 0x10)
             {
                 Vblank();
-
                 switch (lastKey)
                 {
                     case Keys.Left:
@@ -165,13 +139,8 @@ namespace CS8080
                     case Keys.Z:
                         inp1 |= (1 << 4);
                         break;
-                    case Keys.J:
-                        inp1 = 0x0;
-                        break;
-                    case Keys.P:
-                        PrintCount();
-                        break;
                     default:
+                        inp1 = 0x0;
                         break;
 
                 }
@@ -179,7 +148,6 @@ namespace CS8080
                 address = 0x08;
             } else
             {
-
                 address = 0x10;
             }
 
@@ -199,12 +167,11 @@ namespace CS8080
             registers.DumpFlags();
             Console.Write("PC:".PadRight(15));
             Console.WriteLine("0x{0:X}", memory.pc-1);
-            Vblank();
         }
 
         public void Vblank()
         {
-            var ram = memory.getVRAM();
+            var ram = memory.GetVRAM();
             Array.Reverse(ram);
 
             GCHandle handle = GCHandle.Alloc(ram, GCHandleType.Pinned);
@@ -214,13 +181,7 @@ namespace CS8080
             handle.Free();
             bmap.RotateFlip(RotateFlipType.Rotate90FlipNone);
 
-            try
-            {
-                Program.form1.pictureBox1.Image = bmap;
-            } catch
-            {
-
-            }
+            Program.mainWindow.pictureBox1.Image = bmap;
         }
     }
 }

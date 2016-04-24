@@ -13,7 +13,7 @@ namespace CS8080
 
         public Memory(int size)
         {
-            this.memory = new byte[size];
+            memory = new byte[size];
         }
 
         public byte ReadByte()
@@ -52,7 +52,7 @@ namespace CS8080
             memory[position + 1] = bytes[1];
         }
 
-        public byte[] getVRAM()
+        public byte[] GetVRAM()
         {
             return memory.Skip<byte>(0x2400).Take<byte>(0x4000 - 0x2400).ToArray();
         }

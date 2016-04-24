@@ -10,19 +10,11 @@ using System.Windows.Forms;
 
 namespace CS8080
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Form
     {
-        public Form1()
+        public MainWindow()
         {
-
-            this.KeyPreview = true;
             InitializeComponent();
-            /*
-            State state = new State();
-            state.LoadRom(@"c:\invaders");
-            state.Run();
-            state.registers.DumpRegisters();
-            Console.ReadLine();*/
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -37,7 +29,7 @@ namespace CS8080
 
         private void Form1_KeyUp(object sender, KeyEventArgs e)
         {
-            Program.state.ProcessInput(Keys.J);
+            Program.state.ProcessInput(Keys.None);
         }
     }
 }

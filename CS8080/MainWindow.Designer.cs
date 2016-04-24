@@ -1,6 +1,6 @@
 ﻿namespace CS8080
 {
-    partial class Form1
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -48,8 +48,8 @@
             this.ClientSize = new System.Drawing.Size(223, 253);
             this.Controls.Add(this.pictureBox1);
             this.KeyPreview = true;
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "MainWindow";
+            this.Text = "CS8080 - Space Invaders";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
             this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyUp);

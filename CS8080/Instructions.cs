@@ -15,22 +15,58 @@ namespace CS8080
             instructions = new Dictionary<byte, Action<State>>()
             {
                 { 0x00, nop },
-                { 0xc3, jump },
-                { 0x31, lxi_sp },
-                { 0x06, mvi },
-                { 0x0e, mvi },
-                { 0x16, mvi },
-                { 0x3e, mvi },
-                { 0x1e, mvi },
-                { 0x26, mvi },
-                { 0x2e, mvi },
-                { 0x36, mvi },
-                { 0xcd, call },
                 { 0x01, lxi_w },
-                { 0x11, lxi_w },
-                { 0x21, lxi_w },
+                { 0x02, stax },
+                { 0x03, inx_w },
+                { 0x04, inr },
+                { 0x05, dcr },
+                { 0x06, mvi },
+                { 0x07, rlc },
+                { 0x09, dad },
                 { 0x0a, ldax },
+                { 0x0b, dcx },
+                { 0x0c, inr },
+                { 0x0d, dcr },
+                { 0x0e, mvi },
+                { 0x0f, rrc },
+                { 0x11, lxi_w },
+                { 0x12, stax },
+                { 0x13, inx_w },
+                { 0x14, inr },
+                { 0x15, dcr },
+                { 0x16, mvi },
+                { 0x19, dad },
                 { 0x1a, ldax },
+                { 0x1b, dcx },
+                { 0x1c, inr },
+                { 0x1d, dcr },
+                { 0x1e, mvi },
+                { 0x1f, rar },
+                { 0x21, lxi_w },
+                { 0x22, shld },
+                { 0x23, inx_w },
+                { 0x24, inr },
+                { 0x25, dcr },
+                { 0x26, mvi },
+                { 0x27, daa },
+                { 0x29, dad },
+                { 0x2a, lhld },
+                { 0x2b, dcx },
+                { 0x2c, inr },
+                { 0x2d, dcr },
+                { 0x2e, mvi },
+                { 0x2f, cma },
+                { 0x31, lxi_sp },
+                { 0x32, sta },
+                { 0x34, inr },
+                { 0x35, dcr },
+                { 0x36, mvi },
+                { 0x37, stc },
+                { 0x3a, lda },
+                { 0x3b, dcx },
+                { 0x3c, inr },
+                { 0x3d, dcr },
+                { 0x3e, mvi },
                 { 0x40, mov },
                 { 0x41, mov },
                 { 0x42, mov },
@@ -94,27 +130,6 @@ namespace CS8080
                 { 0x7d, mov },
                 { 0x7e, mov },
                 { 0x7f, mov },
-                { 0x03, inx_w },
-                { 0x13, inx_w },
-                { 0x23, inx_w },
-                { 0x05, dcr },
-                { 0x0d, dcr },
-                { 0x15, dcr },
-                { 0x1d, dcr },
-                { 0x25, dcr },
-                { 0x2d, dcr },
-                { 0x3d, dcr },
-                { 0x35, dcr },
-
-                { 0x04, inr },
-                { 0x0c, inr },
-                { 0x14, inr },
-                { 0x1c, inr },
-                { 0x24, inr },
-                { 0x2c, inr },
-                { 0x34, inr },
-                { 0x3c, inr },
-
                 { 0x80, add },
                 { 0x81, add },
                 { 0x82, add },
@@ -123,103 +138,6 @@ namespace CS8080
                 { 0x85, add },
                 { 0x86, add },
                 { 0x87, add },
-
-                { 0xc2, jnz },
-                { 0xc9, ret },
-                { 0xfe, cpi },
-                { 0xc5, push },
-                { 0xd5, push },
-                { 0xe5, push },
-                { 0xf5, push },
-                { 0x09, dad },
-                { 0x19, dad },
-                { 0x29, dad },
-                { 0xeb, xchg },
-                { 0xc1, pop },
-                { 0xd1, pop },
-                { 0xe1, pop },
-                { 0xf1, pop },
-                { 0xd3, output },
-                { 0xfb, ei },
-                { 0xdb, input },
-                { 0x0f, rrc },
-                { 0xe6, ani },
-                { 0xc6, adi },
-                { 0x3a, lda },
-                { 0x32, sta },
-                { 0xa8, xra},
-                { 0xa9, xra},
-                { 0xaa, xra},
-                { 0xab, xra},
-                { 0xac, xra},
-                { 0xad, xra},
-                { 0xae, xra},
-                { 0xaf, xra},
-                { 0xa0, ana},
-                { 0xa1, ana},
-                { 0xa2, ana},
-                { 0xa3, ana},
-                { 0xa4, ana},
-                { 0xa5, ana},
-                { 0xa6, ana},
-                { 0xa7, ana},
-                { 0xb0, ora},
-                { 0xb1, ora},
-                { 0xb2, ora},
-                { 0xb3, ora},
-                { 0xb4, ora},
-                { 0xb5, ora},
-                { 0xb6, ora},
-                { 0xb7, ora},
-                { 0xca, jz },
-                { 0xfa, jm },
-                { 0xd2, jnc },
-                { 0xc4, cnz },
-                { 0xc8, rz },
-                { 0xda, jc },
-                { 0x37, stc },
-                { 0xd8, rc },
-                { 0xe3, xthl },
-                { 0xe9, pchl },
-                { 0xc0, rnz },
-                { 0xd0, rnc },
-                { 0x0b, dcx },
-                { 0x1b, dcx },
-                { 0x2b, dcx },
-                { 0x3b, dcx },
-                { 0xd6, sui },
-                { 0x07, rlc },
-                { 0x2a, lhld },
-                { 0x1f, rar },
-                { 0xf6, ori },
-                { 0x22, shld },
-                { 0xcc, cz },
-                { 0xde, sbi },
-                { 0x2f, cma },
-
-                { 0xb8, cmp },
-                { 0xb9, cmp },
-                { 0xba, cmp },
-                { 0xbb, cmp },
-                { 0xbc, cmp },
-                { 0xbd, cmp },
-                { 0xbe, cmp },
-                { 0xbf, cmp },
-
-                { 0xd4, cnc },
-
-                { 0x90, sub },
-                { 0x91, sub },
-                { 0x92, sub },
-                { 0x93, sub },
-                { 0x94, sub },
-                { 0x95, sub },
-                { 0x96, sub },
-                { 0x97, sub },
-
-                { 0x02, stax },
-                { 0x12, stax },
-                { 0x27, daa },
                 { 0x88, adc },
                 { 0x89, adc },
                 { 0x8a, adc },
@@ -228,7 +146,81 @@ namespace CS8080
                 { 0x8d, adc },
                 { 0x8e, adc },
                 { 0x8f, adc },
-
+                { 0x90, sub },
+                { 0x91, sub },
+                { 0x92, sub },
+                { 0x93, sub },
+                { 0x94, sub },
+                { 0x95, sub },
+                { 0x96, sub },
+                { 0x97, sub },
+                { 0xa0, ana},
+                { 0xa1, ana},
+                { 0xa2, ana},
+                { 0xa3, ana},
+                { 0xa4, ana},
+                { 0xa5, ana},
+                { 0xa6, ana},
+                { 0xa7, ana},
+                { 0xa8, xra},
+                { 0xa9, xra},
+                { 0xaa, xra},
+                { 0xab, xra},
+                { 0xac, xra},
+                { 0xad, xra},
+                { 0xae, xra},
+                { 0xaf, xra},
+                { 0xb0, ora},
+                { 0xb1, ora},
+                { 0xb2, ora},
+                { 0xb3, ora},
+                { 0xb4, ora},
+                { 0xb5, ora},
+                { 0xb6, ora},
+                { 0xb7, ora},
+                { 0xb8, cmp },
+                { 0xb9, cmp },
+                { 0xba, cmp },
+                { 0xbb, cmp },
+                { 0xbc, cmp },
+                { 0xbd, cmp },
+                { 0xbe, cmp },
+                { 0xbf, cmp },
+                { 0xc0, rnz },
+                { 0xc1, pop },
+                { 0xc2, jnz },
+                { 0xc3, jump },
+                { 0xc4, cnz },
+                { 0xc5, push },
+                { 0xc6, adi },
+                { 0xc8, rz },
+                { 0xc9, ret },
+                { 0xca, jz },
+                { 0xcc, cz },
+                { 0xcd, call },
+                { 0xd0, rnc },
+                { 0xd1, pop },
+                { 0xd2, jnc },
+                { 0xd3, output },
+                { 0xd4, cnc },
+                { 0xd5, push },
+                { 0xd6, sui },
+                { 0xd8, rc },
+                { 0xda, jc },
+                { 0xdb, input },
+                { 0xde, sbi },
+                { 0xe1, pop },
+                { 0xe3, xthl },
+                { 0xe5, push },
+                { 0xe6, ani },
+                { 0xe9, pchl },
+                { 0xeb, xchg },
+                { 0xf1, pop },
+                { 0xf5, push },
+                { 0xf6, ori },
+                { 0xfa, jm },
+                { 0xfb, ei },
+                { 0xfe, cpi }
              };
         }
 
@@ -603,7 +595,6 @@ namespace CS8080
         public void output(State state)
         {
             state.cycleCount += 10;
-
             byte port = state.memory.ReadByte();
 
             switch (port)
@@ -627,7 +618,7 @@ namespace CS8080
 
                     break;
                 case 6:
-                    //Watchdog?!?
+                    // Watchdog for reset, not implemented.
                     break;
                 default:
                     state.DumpState();
@@ -699,20 +690,22 @@ namespace CS8080
         */
         public void daa(State state)
         {
+            state.cycleCount += 4;
+
             int top4 = (state.registers.A >> 4) & 0xf;
             int bot4 = (state.registers.A & 0xf);
 
-            if ((bot4 > 9) || ((state.registers.F & (int)Flag.CARRY) > 0)) {
+            if ((bot4 > 9) || state.registers.GetFlag(Flag.CARRY)) {
                 state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, state.registers.A + 6);
                 state.registers.A += 6;
                 top4 = (state.registers.A >> 4) & 0xF;
                 bot4 = (state.registers.A & 0xf);
             }
 
-            if((top4 > 9) || ((state.registers.F & (int)Flag.CARRY) > 0))
+            if((top4 > 9) || state.registers.GetFlag(Flag.CARRY))
             {
                 top4 += 6;
-                state.registers.A = (byte)((top4 << 4) | bot4);
+                state.registers.A = (byte)(((top4 << 4) | bot4));
             }
         }
 
@@ -882,24 +875,11 @@ namespace CS8080
         {
             state.cycleCount += 4;
 
-            /*
-            byte bit1 = (byte)(state.registers.A & 0x1);
-            state.registers.A = (byte)((state.registers.A >> 1) | ((state.registers.F & Flag.CARRY) << 7));
-
-            if (bit1 != 0)
-            {
-                state.registers.F |= Flag.CARRY;
-            }
-            else
-            {
-                state.registers.F &= unchecked((byte)~Flag.CARRY);
-            }*/
-
-            int temp = state.registers.A & 0xff;
+            int temp = state.registers.A;
 
             state.registers.A >>= 1;
 
-            if((state.registers.F & Flag.CARRY) > 0)
+            if(state.registers.GetFlag(Flag.CARRY))
             {
                 state.registers.A |= 0x80;
             }
@@ -922,7 +902,7 @@ namespace CS8080
 
             state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, result);
 
-            state.registers.A = (byte) result;
+            state.registers.A = (byte)result;
         }
 
         public void shld(State state)
@@ -939,7 +919,7 @@ namespace CS8080
             int result;
             byte value = state.memory.ReadByte();
             
-            if((state.registers.F & Flag.CARRY) != 0)
+            if(state.registers.GetFlag(Flag.CARRY))
             {
                 result = state.registers.A - (value - 1);
             } else

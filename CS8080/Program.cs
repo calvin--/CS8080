@@ -13,25 +13,20 @@ namespace CS8080
     public class Program
     {
         public static State state;
-        public static Form1 form1;
+        public static MainWindow mainWindow;
 
         [STAThread]
         static void Main(string[] args)
         {
             state = new State();
             state.LoadRom(@"c:\invaders");
-            Thread thread1 = new Thread(new ThreadStart(test));
-            thread1.Start();
+            
+            Thread emulatorThread = new Thread(new ThreadStart(state.Run));
+            emulatorThread.Start();
 
-            form1 = new Form1();
+            mainWindow = new MainWindow();
 
-            Application.Run(form1);
-        }
-
-        static void test()
-        {
-            state.Run();
-
+            Application.Run(mainWindow);
         }
     }
 }
