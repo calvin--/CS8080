@@ -695,7 +695,7 @@ namespace CS8080
             int top4 = (state.registers.A >> 4) & 0xf;
             int bot4 = (state.registers.A & 0xf);
 
-            if ((bot4 > 9) || state.registers.GetFlag(Flag.CARRY)) {
+            if ((bot4 > 9) || state.registers.GetFlag(Flag.ACARRY)) {
                 state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, state.registers.A + 6);
                 state.registers.A += 6;
                 top4 = (state.registers.A >> 4) & 0xF;
