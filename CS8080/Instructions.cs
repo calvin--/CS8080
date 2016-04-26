@@ -605,7 +605,7 @@ namespace CS8080
                 case 3:
                     if (((state.registers.A & (1 << 3)) > 0) && ((state.port3o & (1 << 3)) == 0))
                     {
-                        state.soundInvaderKilled.Play();
+                        //state.soundInvaderKilled.Play();
                     }
 
                     state.port3o = state.registers.A;
@@ -705,6 +705,8 @@ namespace CS8080
             if((top4 > 9) || state.registers.GetFlag(Flag.CARRY))
             {
                 top4 += 6;
+                state.registers.SetFlags((byte)Flag.SIGN | (byte)Flag.ZERO | (byte)Flag.PARITY | (byte)Flag.ACARRY | (byte)Flag.CARRY, state.registers.A, (((top4 << 4) | bot4)));
+
                 state.registers.A = (byte)(((top4 << 4) | bot4));
             }
         }

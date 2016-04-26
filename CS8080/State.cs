@@ -43,7 +43,7 @@ namespace CS8080
         
         public Keys lastKey = 0;
 
-        public SoundPlayer soundInvaderKilled = new SoundPlayer(@"c:\invaderkilled.wav");
+        //public SoundPlayer soundInvaderKilled = new SoundPlayer(@"c:\invaderkilled.wav");
 
         public State()
         {
